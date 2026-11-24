@@ -1,0 +1,40 @@
+:root { --ink: #1f2328; --ink2: #5b6470; --ink3: #8a929c; --line: #e6e2da; --bg: #f7f5f1; --card: #ffffff; --mono: "JetBrains Mono", ui-monospace, monospace; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); font: 14px/1.5 Inter, system-ui, sans-serif; }
+a { color: #2e6f8c; }
+#map { position: absolute; inset: 0 420px 0 0; }
+#panel { position: absolute; top: 0; right: 0; bottom: 0; width: 420px; overflow-y: auto; background: var(--card); border-left: 1px solid var(--line); padding: 22px 22px 14px; }
+.eb { font: 500 11px var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ink3); }
+h1 { font: 800 25px/1.12 Inter; letter-spacing: -.02em; margin: 8px 0 6px; }
+.sub { color: var(--ink2); margin: 0 0 14px; }
+h3 { font: 600 11.5px Inter; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); margin: 16px 0 8px; }
+.seg { display: flex; background: #efebe4; border-radius: 10px; padding: 3px; gap: 2px; }
+.seg button { flex: 1; border: 0; background: none; padding: 8px 6px; border-radius: 8px; font: 600 12.5px var(--mono); color: var(--ink2); cursor: pointer; }
+.seg button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
+#closures { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+#closures button { text-align: left; border: 1.5px solid var(--line); background: #fff; border-radius: 10px; padding: 8px 10px; cursor: pointer; font: 500 12.5px Inter; color: var(--ink); }
+#closures button b { display: block; font: 600 11px var(--mono); color: var(--ink3); }
+#closures button.on { border-color: #d2553f; background: #fbefec; }
+#closures button.on b { color: #d2553f; }
+#chaos { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0 8px; }
+#chaos div { background: var(--bg); border-radius: 9px; padding: 8px 8px 6px; }
+#chaos b { display: block; font: 700 19px Inter; } #chaos span { font-size: 11px; color: var(--ink2); line-height: 1.25; display: block; }
+#spark { width: 100%; height: 75px; display: block; }
+#legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 14px 0 6px; font-size: 12px; color: var(--ink2); }
+#legend i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+#play { display: flex; align-items: center; gap: 8px; margin: 10px 0 12px; }
+#pp { width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--ink); color: #fff; font-size: 14px; cursor: pointer; flex: none; }
+#slider { flex: 1; accent-color: var(--ink); }
+#speed { font: 500 12px var(--mono); border: 1px solid var(--line); border-radius: 6px; padding: 4px; background: #fff; }
+#clock { position: absolute; left: 18px; top: 16px; z-index: 3; background: rgba(255,255,255,.94); border: 1px solid var(--line); border-radius: 12px; padding: 8px 14px; display: flex; align-items: baseline; gap: 10px; box-shadow: 0 4px 16px rgba(40,30,20,.08); }
+#clock b { font: 600 30px var(--mono); letter-spacing: -.02em; } #clock span { font: 600 12px var(--mono); color: var(--ink3); }
+details { margin: 10px 0; } summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+.fine { font-size: 12px; color: var(--ink2); } .fine p { margin: 6px 0; }
+#tip { position: absolute; pointer-events: none; z-index: 6; background: rgba(31,35,40,.93); color: #fff; font-size: 12px; padding: 6px 9px; border-radius: 7px; display: none; }
+body.film #panel, body.film #clock, body.film .maplibregl-ctrl { display: none !important; }
+body.film #map { inset: 0; }
+@media (max-width: 860px) {
+  #map { inset: 0 0 50vh 0; } #panel { top: 50vh; width: auto; left: 0; border-left: 0; border-top: 1px solid var(--line); padding: 16px; }
+  #clock b { font-size: 22px; }
+}
