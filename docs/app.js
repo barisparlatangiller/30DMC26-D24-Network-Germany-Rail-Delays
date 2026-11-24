@@ -14,7 +14,7 @@ const key = () => { const k = ["K", "F", "H", "S"].filter(c => S.on.has(c)).join
 
 // per-scenario vertex times and colours: scheduled time + delay interpolated between the stops
 function build() {
-  S.case = S.mode === "whatif" ? key() : "none";
+  S.case = S.mode === "whatif" ? key() : S.mode === "ist" ? "ist" : "none";
   const C = WI.cases[S.case];
   for (let i = 0; i < P.trips.length; i++) {
     const t = P.trips[i], dl = C.dl[i], dd = C.dd[i], n = t.p.length;
@@ -58,19 +58,24 @@ function layers() {
 }
 function chaos() {
   const c = WI.cases[S.case].stats, base = WI.cases.none.stats;
+  if (!$("#chaos")) return;
   $("#chaos").innerHTML = [[c.trains_hit, "trains ≥ 5 min late"], [c.late15, "≥ 15 min late"], [c.delay_min.toLocaleString("en-US"), "delay minutes at arrival"], [c.max + "'", "worst delay"]]
     .map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join("");
-  const cv = $("#spark"), g = cv.getContext("2d"), W = cv.width, Hh = cv.height, mx = Math.max(6, ...WI.cases.KFHS.stats.series);
+  const cv = $("#spark"), g = cv.getContext("2d"), W = cv.width, Hh = cv.height, mx = Math.max(6, ...WI.cases.ist.stats.series, ...WI.cases.KFHS.stats.series);
   g.clearRect(0, 0, W, Hh);
   const pl = (ser, color, fill) => { g.beginPath(); ser.forEach((v, i) => { const x = i / (ser.length - 1) * W, y = Hh - 6 - v / mx * (Hh - 16); i ? g.lineTo(x, y) : g.moveTo(x, y); });
     if (fill) { g.lineTo(W, Hh - 6); g.lineTo(0, Hh - 6); g.fillStyle = fill; g.fill(); } else { g.strokeStyle = color; g.lineWidth = 3; g.stroke(); } };
-  pl(base.series, "#b9b2a6"); pl(c.series, null, "rgba(210,85,63,.28)"); pl(c.series, "#d2553f");
+  pl(base.series, "#b9b2a6");
+  if (S.case !== "ist") { g.setLineDash([6, 6]); pl(WI.cases.ist.stats.series, "rgba(142,42,109,.6)"); g.setLineDash([]); }
+  pl(c.series, null, S.case === "ist" ? "rgba(142,42,109,.22)" : "rgba(210,85,63,.28)"); pl(c.series, S.case === "ist" ? "#8e2a6d" : "#d2553f");
   const x = (S.t - 360) / 720 * W; g.strokeStyle = "#1f2328"; g.lineWidth = 2; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, Hh); g.stroke();
   const w0 = (WI.window[0] - 360) / 720 * W, w1 = (WI.window[1] - 360) / 720 * W; g.fillStyle = "rgba(31,35,40,.06)"; g.fillRect(w0, 0, w1 - w0, Hh);
 }
 function setMode(m) {
   S.mode = m; $$("#modes button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
-  $("#wi").style.display = m === "whatif" ? "" : "none"; $("#mode-l").textContent = m === "whatif" ? `WHAT IF · ${key() === "none" ? "no closure" : [...S.on].map(c => NODES[c].name).join(" + ")}` : m.toUpperCase();
+  $("#wi").style.display = m === "plan" ? "none" : ""; $("#closures").style.display = $("#cl-h").style.display = m === "whatif" ? "" : "none";
+  $("#sparknote").innerHTML = m === "ist" ? "Trains running at least 5 min late on the real Monday (purple) against the timetable (grey)." : "Trains running at least 5 min late in this scenario (red). Dashed purple: the real Monday. Grey: the timetable.";
+  $("#mode-l").textContent = m === "whatif" ? `WHAT IF · ${key() === "none" ? "no closure" : [...S.on].map(c => NODES[c].name).join(" + ")}` : m === "ist" ? "IST · real delays, Mon 23 Nov" : "PLAN";
   if (map.getLayer("hsl")) map.setPaintProperty("hsl", "line-opacity", m === "whatif" && S.on.has("S") ? 0.9 : 0);
   build();
 }
@@ -101,10 +106,15 @@ async function init() {
   const big = P.stations.filter(s => s.n >= 60);
   map.addSource("st", { type: "geojson", data: { type: "FeatureCollection", features: big.map(s => ({ type: "Feature", geometry: { type: "Point", coordinates: [s.lon, s.lat] }, properties: { name: s.name.replace(/^S\+U |, Hauptbahnhof| Hauptbahnhof| Hbf$|Hamburg, /g, "").replace(" (Main)", "").replace(" Flughafen Fernbahnhof", " Flughafen"), n: s.n } })) } });
   map.addLayer({ id: "st", type: "circle", source: "st", paint: { "circle-radius": ["interpolate", ["linear"], ["get", "n"], 60, 2.5, 180, 4.5], "circle-color": "#ffffff", "circle-stroke-color": "#5b6470", "circle-stroke-width": 1.2 } });
+  const CITIES = [["bm0i", "Berlin"], ["abk", "Hamburg"], ["4mig", "München"], ["aa8", "Köln"], ["bxxg", "Frankfurt"], ["5vyl", "Hannover"], ["31qb", "Mannheim"]];
+  for (const n of P.stations) if (/Leipzig Hbf|Stuttgart Hbf|Nürnberg Hbf|Dortmund Hbf|Dresden Hbf|Bremen Hbf|Erfurt Hbf|Kassel-Wilhelmshöhe|Basel Bad|Karlsruhe Hbf/.test(n.name)) CITIES.push([n.id, n.name.replace(/ Hbf| Bad Bf|-Wilhelmshöhe/g, "").replace(/^.*, /, "")]);
+  for (const [id, name] of CITIES) { const s = ST[id]; if (!s) continue; const el = document.createElement("div"); el.className = "city"; el.textContent = name;
+    new maplibregl.Marker({ element: el, anchor: "left", offset: [7, -9] }).setLngLat([s.lon, s.lat]).addTo(map); }
   overlay = new deck.MapboxOverlay({ interleaved: false, layers: [] }); map.addControl(overlay);
   // closure buttons
   $("#closures").innerHTML = Object.entries(NODES).map(([c, n]) => `<button data-c="${c}"><b>${c === "S" ? "LINE" : "HUB"}</b>${n.name}</button>`).join("");
   $$("#closures button").forEach(b => b.onclick = () => { const c = b.dataset.c; S.on.has(c) ? S.on.delete(c) : S.on.add(c); b.classList.toggle("on"); setMode("whatif"); });
+  $("#ist-b").disabled = false; $("#ist-b").title = "";
   $$("#modes button").forEach(b => b.onclick = () => { if (b.dataset.m === "whatif" && S.on.size === 0) { S.on.add("K"); $('#closures [data-c="K"]').classList.add("on"); } setMode(b.dataset.m); });
   $("#pp").onclick = () => { S.play = !S.play; $("#pp").textContent = S.play ? "❚❚" : "▶"; };
   $("#slider").oninput = e => { S.t = +e.target.value; chaos(); };

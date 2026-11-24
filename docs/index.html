@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
-<link href="style.css?v=1" rel="stylesheet">
+<link href="style.css?v=2" rel="stylesheet">
 </head>
 <body>
 <div id="map"></div>
@@ -19,14 +19,14 @@
 <aside id="panel">
   <div class="eb">#30DayMapChallenge · Day 24 · Network · Deutschland</div>
   <h1>12 Stunden. Ein Land. Ein Schienennetz.</h1>
-  <p class="sub">Germany's long-distance trains on Monday 23 November 2026, 06:00–18:00. When one hub closes for an hour, how far does the delay travel?</p>
-  <div class="seg" id="modes"><button data-m="plan" class="on">PLAN</button><button data-m="whatif">WHAT IF</button><button data-m="ist" id="ist-b" disabled title="real delays: coming">IST</button></div>
+  <p class="sub">Germany's long-distance trains on Monday 23 November 2026, 06:00–18:00: the timetable (PLAN), the real day (IST), and what happens when a hub closes for an hour (WHAT IF).</p>
+  <div class="seg" id="modes"><button data-m="plan" class="on">PLAN</button><button data-m="ist" id="ist-b">IST</button><button data-m="whatif">WHAT IF</button></div>
   <div id="wi">
-    <h3>Close for one hour (08:00–09:00)</h3>
+    <h3 id="cl-h">Close for one hour (08:00–09:00)</h3>
     <div id="closures"></div>
     <div id="chaos"></div>
     <canvas id="spark" width="760" height="150"></canvas>
-    <p class="fine">Trains running at least 5 min late, 06:00–18:00. Grey: the timetable.</p>
+    <p class="fine" id="sparknote"></p>
   </div>
   <div id="legend">
     <span><i style="background:#2e8b84"></i>on time</span><span><i style="background:#e0a32b"></i>5–15 min</span><span><i style="background:#d2553f"></i>15–30</span><span><i style="background:#8e2a6d"></i>30+ min</span>
@@ -38,6 +38,7 @@
   </div>
   <details><summary>Method and limits</summary><div class="fine">
     <p><b>PLAN.</b> Long-distance timetable from gtfs.de (DELFI, CC BY 4.0), feed "latest-fv-free": every ICE, IC, EC, RJ, NJ/EN and partner train running on Monday 23 Nov 2026 between 06:00 and 18:00 (841 trips, 432 stations). Between stations the trains move along a smooth curve through their stops (centripetal Catmull-Rom) at constant speed, and stand still while they dwell. The curves are schematic, not the surveyed track.</p>
+    <p><b>IST.</b> The real delays of that Monday from the gtfs.de realtime feed (same timetable version), matched to each train by trip ID and to its stations by scheduled time. 724 of the 841 trains have realtime records; stations without a record keep the last known delay, early running counts as on time.</p>
     <p><b>WHAT IF.</b> A small event simulation over all trains, in time order. A closed station holds every train due in the window until 09:00, then lets them leave 2 min apart. On every section A→B trains keep 3 min apart, so a late train delays those behind it. Late trains win back 4% of their running time and keep at most 1 min of each stop. A train set that ends its run turns around into the next train of the same kind leaving that station 15–90 min later (estimated: the feed has no vehicle data), and cannot leave earlier than 15 min after it arrived. When the Köln–Rhein/Main high-speed line is closed, trains on it detour via the Rhine valley (+45 min) and skip Montabaur and Limburg Süd.</p>
     <p>It is a gentle model of how delays travel, not a forecast. Cancellations, reroutes, trains waiting for connections and crew changes are left out; real disruptions spread further.</p>
     <p>Data: gtfs.de / DELFI e.V. (CC BY 4.0) · Natural Earth · basemap © CARTO © OpenStreetMap contributors.</p>
@@ -47,5 +48,5 @@
 <div id="tip"></div>
 <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/deck.gl@9.0.38/dist.min.js"></script>
-<script src="app.js?v=1"></script>
+<script src="app.js?v=3"></script>
 </body></html>

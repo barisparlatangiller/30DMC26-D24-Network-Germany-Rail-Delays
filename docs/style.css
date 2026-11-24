@@ -38,3 +38,5 @@ body.film #map { inset: 0; }
   #map { inset: 0 0 50vh 0; } #panel { top: 50vh; width: auto; left: 0; border-left: 0; border-top: 1px solid var(--line); padding: 16px; }
   #clock b { font-size: 22px; }
 }
+
+.city { font: 600 12.5px Inter, sans-serif; color: #1f2328; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 4px #fff; pointer-events: none; white-space: nowrap; }
